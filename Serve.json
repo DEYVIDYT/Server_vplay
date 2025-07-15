@@ -1,0 +1,10 @@
+[
+  {
+    "url": "https://cinestreampro.wuaze.com/",
+    "webview": true
+  },
+  {
+    "url": "http://mybrasiltv.x10.mx/",
+    "webview": false
+  }
+]
