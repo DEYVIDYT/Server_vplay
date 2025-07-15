@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineStream Live - Painel Administrativo</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #667eea;
+            --primary-dark: #5a67d8;
+            --secondary-color: #764ba2;
+            --success-color: #48bb78;
+            --warning-color: #ed8936;
+            --danger-color: #f56565;
+            --dark-bg: #1a202c;
+            --darker-bg: #2d3748;
+            --light-bg: #f7fafc;
+            --text-light: #e2e8f0;
+            --text-dark: #2d3748;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --light-bg: #1a202c;
+            --border-color: #4a5568;
+            --text-dark: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            height: 100vh;
+            background: var(--dark-bg);
+            color: var(--text-light);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .sidebar.active {
+            transform: translateX(0);
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid #4a5568;
+            text-align: center;
+        }
+
+        .sidebar-header h2 {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 1rem 1.5rem;
+            color: var(--text-light);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: var(--primary-color);
+            padding-left: 2rem;
+        }
+
+        .nav-item i {
+            width: 20px;
+            margin-right: 0.75rem;
+        }
+
+        .main-content {
+            margin-left: 0;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.shifted {
+            margin-left: 250px;
+        }
+
+        .header {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-dark);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .menu-toggle:hover {
+            background: var(--border-color);
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-dark);
+        }
+
+        .theme-toggle:hover {
+            background: var(--border-color);
+        }
+
+        .container {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .stat-icon.users { background: rgba(103, 126, 234, 0.1); color: var(--primary-color); }
+        .stat-icon.online { background: rgba(72, 187, 120, 0.1); color: var(--success-color); }
+        .stat-icon.plans { background: rgba(237, 137, 54, 0.1); color: var(--warning-color); }
+        .stat-icon.banned { background: rgba(245, 101, 101, 0.1); color: var(--danger-color); }
+        .stat-icon.today { background: rgba(118, 75, 162, 0.1); color: var(--secondary-color); }
+
+        .stat-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 1;
+        }
+
+        .card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .card-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .form-control {
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            background: white;
+            color: var(--text-dark);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(103, 126, 234, 0.1);
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+        }
+
+        .form-control.search {
+            padding-left: 2.5rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            text-align: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .table th,
+        .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .table tr:hover {
+            background: #f8fafc;
+        }
+
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-success {
+            background: rgba(72, 187, 120, 0.1);
+            color: var(--success-color);
+        }
+
+        .badge-danger {
+            background: rgba(245, 101, 101, 0.1);
+            color: var(--danger-color);
+        }
+
+        .badge-warning {
+            background: rgba(237, 137, 54, 0.1);
+            color: var(--warning-color);
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 0.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: var(--border-color);
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+
+        .spinner {
+            width: 2rem;
+            height: 2rem;
+            border: 2px solid var(--border-color);
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.75rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #6b7280;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header {
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 1rem;
+            }
+
+            .filters {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .main-content.shifted {
+                margin-left: 0;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+        }
+
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-weight: 500;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 3000;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: var(--success-color);
+        }
+
+        .notification.error {
+            background: var(--danger-color);
+        }
+
+        .notification.warning {
+            background: var(--warning-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-film"></i> CineStream</h2>
+            <p style="font-size: 0.875rem; opacity: 0.7;">Painel Administrativo</p>
+        </div>
+        <div class="sidebar-nav">
+            <button class="nav-item active" data-section="dashboard">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </button>
+            <button class="nav-item" data-section="users">
+                <i class="fas fa-users"></i> Usuários
+            </button>
+            <button class="nav-item" data-section="plans">
+                <i class="fas fa-crown"></i> Planos
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="header-title" id="pageTitle">Dashboard</h1>
+            </div>
+            <div class="header-right">
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <span style="font-size: 0.875rem; color: #6b7280;">Admin Panel</span>
+            </div>
+        </header>
+
+        <div class="container">
+            <!-- Dashboard Section -->
+            <section id="dashboard-section" class="section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Total de Usuários</span>
+                            <div class="stat-icon users">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="total-users">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Usuários Online</span>
+                            <div class="stat-icon online">
+                                <i class="fas fa-circle"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="online-users">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Planos Ativos</span>
+                            <div class="stat-icon plans">
+                                <i class="fas fa-crown"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="active-plans">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Usuários Banidos</span>
+                            <div class="stat-icon banned">
+                                <i class="fas fa-ban"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="banned-users">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Acessos Hoje</span>
+                            <div class="stat-icon today">
+                                <i class="fas fa-calendar-day"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="today-users">0</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Users Section -->
+            <section id="users-section" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Gerenciar Usuários</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="filters">
+                            <div class="form-group">
+                                <label class="form-label">Buscar por Email</label>
+                                <div class="search-container">
+                                    <i class="fas fa-search search-icon"></i>
+                                    <input type="text" class="form-control search" id="email-search" placeholder="Digite o email do usuário...">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Status do Usuário</label>
+                                <select class="form-control" id="status-filter">
+                                    <option value="all">Todos</option>
+                                    <option value="active">Ativos</option>
+                                    <option value="banned">Banidos</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Status do Plano</label>
+                                <select class="form-control" id="plan-filter">
+                                    <option value="all">Todos</option>
+                                    <option value="active">Planos Ativos</option>
+                                    <option value="expired">Planos Expirados</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="align-self: end;">
+                                <button class="btn btn-primary" onclick="filterUsers()">
+                                    <i class="fas fa-filter"></i> Filtrar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Email</th>
+                                        <th>Expiração do Plano</th>
+                                        <th>Status</th>
+                                        <th>Plano</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="users-table-body">
+                                    <tr>
+                                        <td colspan="6" class="loading">
+                                            <div class="spinner"></div>
+                                            Carregando usuários...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Plans Section -->
+            <section id="plans-section" class="section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Gerenciar Planos</h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="add-plan-form">
+                            <div class="filters">
+                                <div class="form-group">
+                                    <label class="form-label">Email do Usuário</label>
+                                    <input type="email" class="form-control" id="plan-email" placeholder="email@exemplo.com" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Duração (dias)</label>
+                                    <input type="number" class="form-control" id="plan-days" placeholder="30" min="1" required>
+                                </div>
+                                <div class="form-group" style="align-self: end;">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-plus"></i> Adicionar Plano
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Modal de Confirmação -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirmar Ação</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modal-body">
+                <p>Tem certeza que deseja realizar esta ação?</p>
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                <button class="btn btn-danger" id="confirm-action">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const correctToken = "f3a8e0d8a5f2b7c9f9ad6c2eb37dd28cb3fa6ff2390b0a6129739e2c5a891d43";
+        let apiToken = '';
+        let currentUsers = [];
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            const enteredToken = prompt("Por favor, insira o token de autenticação:");
+            if (enteredToken === correctToken) {
+                apiToken = enteredToken;
+                init();
+            } else {
+                showNotification("Token inválido. Acesso negado.", "error");
+                document.body.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100vh; font-size: 1.5rem; color: #f56565;"><i class="fas fa-lock" style="margin-right: 1rem;"></i>Acesso Negado</div>';
+            }
+        });
+
+        function init() {
+            setupEventListeners();
+            loadStats();
+            loadUsers();
+        }
+
+        function setupEventListeners() {
+            // Menu toggle
+            document.getElementById('menuToggle').addEventListener('click', toggleSidebar);
+            
+            // Theme toggle
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            
+            // Navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', () => navigateToSection(item.dataset.section));
+            });
+            
+            // Form submission
+            document.getElementById('add-plan-form').addEventListener('submit', handlePlanSubmission);
+            
+            // Real-time search
+            document.getElementById('email-search').addEventListener('input', debounce(filterUsers, 300));
+            document.getElementById('status-filter').addEventListener('change', filterUsers);
+            document.getElementById('plan-filter').addEventListener('change', filterUsers);
+            
+            // Close modal on backdrop click
+            document.getElementById('confirmModal').addEventListener('click', (e) => {
+                if (e.target.id === 'confirmModal') closeModal();
+            });
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            sidebar.classList.toggle('active');
+            mainContent.classList.toggle('shifted');
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.querySelector('#themeToggle i');
+            
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                themeIcon.className = 'fas fa-moon';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeIcon.className = 'fas fa-sun';
+            }
+        }
+
+        function navigateToSection(section) {
+            // Update navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-section="${section}"]`).classList.add('active');
+            
+            // Update sections
+            document.querySelectorAll('.section').forEach(sec => {
+                sec.classList.remove('active');
+            });
+            document.getElementById(`${section}-section`).classList.add('active');
+            
+            // Update page title
+            const titles = {
+                dashboard: 'Dashboard',
+                users: 'Usuários',
+                plans: 'Planos'
+            };
+            document.getElementById('pageTitle').textContent = titles[section];
+            
+            // Close sidebar on mobile
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.remove('active');
+                document.getElementById('mainContent').classList.remove('shifted');
+            }
+        }
+
+        function apiFetch(action, options = {}) {
+            const url = new URL('api.php', window.location.href);
+            url.searchParams.set('token', apiToken);
+            url.searchParams.set('action', action);
+            
+            if (options.params) {
+                Object.entries(options.params).forEach(([key, value]) => {
+                    url.searchParams.set(key, value);
+                });
+            }
+            
+            return fetch(url, {
+                method: options.method || 'GET',
+                headers: options.headers || {},
+                body: options.body
+            }).then(response => response.json());
+        }
+
+        function loadStats() {
+            apiFetch('get_stats').then(data => {
+                document.getElementById('total-users').textContent = data.total_users || 0;
+                document.getElementById('online-users').textContent = data.online_users || 0;
+                document.getElementById('active-plans').textContent = data.active_plans || 0;
+                document.getElementById('banned-users').textContent = data.banned_users || 0;
+                document.getElementById('today-users').textContent = data.today_users || 0;
+            }).catch(error => {
+                console.error('Erro ao carregar estatísticas:', error);
+            });
+        }
+
+        function loadUsers() {
+            const tbody = document.getElementById('users-table-body');
+            tbody.innerHTML = '<tr><td colspan="6" class="loading"><div class="spinner"></div>Carregando usuários...</td></tr>';
+            
+            apiFetch('get_users').then(data => {
+                if (data.status === 'error') {
+                    tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><i class="fas fa-exclamation-triangle"></i><br>Erro: ${data.message}</td></tr>`;
+                    return;
+                }
+                
+                currentUsers = data;
+                displayUsers(data);
+            }).catch(error => {
+                console.error('Erro ao carregar usuários:', error);
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><i class="fas fa-wifi"></i><br>Erro de conexão</td></tr>';
+            });
+        }
+
+        function filterUsers() {
+            const search = document.getElementById('email-search').value.trim();
+            const status = document.getElementById('status-filter').value;
+            const planStatus = document.getElementById('plan-filter').value;
+            
+            const params = {};
+            if (search) params.search = search;
+            if (status !== 'all') params.status = status;
+            if (planStatus !== 'all') params.plan_status = planStatus;
+            
+            const tbody = document.getElementById('users-table-body');
+            tbody.innerHTML = '<tr><td colspan="6" class="loading"><div class="spinner"></div>Filtrando usuários...</td></tr>';
+            
+            apiFetch('get_users', { params }).then(data => {
+                if (data.status === 'error') {
+                    tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><i class="fas fa-exclamation-triangle"></i><br>Erro: ${data.message}</td></tr>`;
+                    return;
+                }
+                
+                currentUsers = data;
+                displayUsers(data);
+            }).catch(error => {
+                console.error('Erro ao filtrar usuários:', error);
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><i class="fas fa-wifi"></i><br>Erro de conexão</td></tr>';
+            });
+        }
+
+        function displayUsers(users) {
+            const tbody = document.getElementById('users-table-body');
+            
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><i class="fas fa-users"></i><br>Nenhum usuário encontrado</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = users.map(user => {
+                const statusBadge = user.is_banned == 1 
+                    ? '<span class="badge badge-danger">Banido</span>'
+                    : '<span class="badge badge-success">Ativo</span>';
+                
+                const planBadge = user.plan_active
+                    ? '<span class="badge badge-success">Ativo</span>'
+                    : '<span class="badge badge-warning">Expirado</span>';
+                
+                const banButton = user.is_banned == 1
+                    ? `<button class="btn btn-success btn-sm" onclick="toggleBan(${user.id})"><i class="fas fa-unlock"></i> Desbanir</button>`
+                    : `<button class="btn btn-danger btn-sm" onclick="toggleBan(${user.id})"><i class="fas fa-ban"></i> Banir</button>`;
+                
+                return `
+                    <tr>
+                        <td>${user.id}</td>
+                        <td>${user.email}</td>
+                        <td>${user.plan_expiration && user.plan_expiration !== '1970-01-01' ? new Date(user.plan_expiration).toLocaleDateString('pt-BR') : 'N/A'}</td>
+                        <td>${statusBadge}</td>
+                        <td>${planBadge}</td>
+                        <td class="actions">
+                            ${banButton}
+                            <button class="btn btn-warning btn-sm" onclick="removeDays(${user.id})">
+                                <i class="fas fa-calendar-minus"></i> Remover Dias
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.id})">
+                                <i class="fas fa-trash"></i> Remover
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function handlePlanSubmission(e) {
+            e.preventDefault();
+            const email = document.getElementById('plan-email').value;
+            const days = document.getElementById('plan-days').value;
+            addPlan(email, days);
+        }
+
+        function addPlan(email, days) {
+            apiFetch('add_plan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, days })
+            }).then(data => {
+                if (data.status === 'success') {
+                    showNotification('Plano adicionado com sucesso!', 'success');
+                    document.getElementById('add-plan-form').reset();
+                    loadUsers();
+                    loadStats();
+                } else {
+                    showNotification('Erro: ' + data.message, 'error');
+                }
+            }).catch(error => {
+                showNotification('Erro de conexão', 'error');
+                console.error(error);
+            });
+        }
+
+        function toggleBan(userId) {
+            showConfirmModal(
+                'Alterar Status de Banimento',
+                'Tem certeza que deseja alterar o status de banimento deste usuário?',
+                () => {
+                    apiFetch('toggle_ban', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id: userId })
+                    }).then(data => {
+                        if (data.status === 'success') {
+                            showNotification('Status alterado com sucesso!', 'success');
+                            loadUsers();
+                            loadStats();
+                        } else {
+                            showNotification('Erro: ' + data.message, 'error');
+                        }
+                    }).catch(error => {
+                        showNotification('Erro de conexão', 'error');
+                        console.error(error);
+                    });
+                }
+            );
+        }
+
+        function removeDays(userId) {
+            showConfirmModal(
+                'Remover Dias do Plano',
+                'Tem certeza que deseja remover os dias de plano deste usuário?',
+                () => {
+                    apiFetch('remove_days', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id: userId })
+                    }).then(data => {
+                        if (data.status === 'success') {
+                            showNotification('Dias removidos com sucesso!', 'success');
+                            loadUsers();
+                            loadStats();
+                        } else {
+                            showNotification('Erro: ' + data.message, 'error');
+                        }
+                    }).catch(error => {
+                        showNotification('Erro de conexão', 'error');
+                        console.error(error);
+                    });
+                }
+            );
+        }
+
+        function deleteUser(userId) {
+            showConfirmModal(
+                'Remover Usuário',
+                'Tem certeza que deseja remover este usuário? Esta ação não pode ser desfeita.',
+                () => {
+                    apiFetch('delete_user', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id: userId })
+                    }).then(data => {
+                        if (data.status === 'success') {
+                            showNotification('Usuário removido com sucesso!', 'success');
+                            loadUsers();
+                            loadStats();
+                        } else {
+                            showNotification('Erro: ' + data.message, 'error');
+                        }
+                    }).catch(error => {
+                        showNotification('Erro de conexão', 'error');
+                        console.error(error);
+                    });
+                }
+            );
+        }
+
+        function showConfirmModal(title, message, confirmCallback) {
+            document.querySelector('#confirmModal .modal-title').textContent = title;
+            document.querySelector('#modal-body p').textContent = message;
+            document.getElementById('confirm-action').onclick = () => {
+                confirmCallback();
+                closeModal();
+            };
+            document.getElementById('confirmModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('confirmModal').classList.remove('active');
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => document.body.removeChild(notification), 300);
+            }, 3000);
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Auto refresh stats every 30 seconds
+        setInterval(loadStats, 30000);
+    </script>
+</body>
+</html>
